@@ -3,31 +3,32 @@
 #include <gint/keycodes.h>
 #include <gint/clock.h>
 #include <unistd.h>
-#include <bool.h>
 
 #define FRAMES 12
-#define FRAME_DT 40000 // Microseconds
+#define FRAME_DT 60000 // Microseconds
 
 /* Linked objects */
 /* super lazy, but whatever */
 extern bopti_image_t f00, f01, f02, f03, f04, f05, f06, f07, f08, f09, f10, f11;
 
 /* Variables */
-bool exit = false;
+bool exitProgram = false;
 int frame = 0;
-static *bopti_image_t frames[FRAMES] = {&f00, &f01, &f02, &f03, &f04, &f05, &f06, &f07, &f08, &f09, &f10, &f11};
+const bopti_image_t *frames[FRAMES] = {&f00, &f01, &f02, &f03, &f04, &f05, &f06, &f07, &f08, &f09, &f10, &f11};
 
 
 static void procinput() {
+	pollevent();
+
 	if (keydown(KEY_EXIT) > 0) {
-		exit = true;
+		exitProgram = true;
 	}
 }
 
 static void logic() {
 	frame++;
 
-	if (frame > FRAMES) {
+	if (frame >= FRAMES) {
 		frame = 0;
 	}
 }
@@ -46,15 +47,13 @@ int main(void)
 {
 	dclear(C_BLACK);
 
-	do
-	{
+	while (!exitProgram) {
 		procinput();
 		logic();
 		render();
 
 		sleep_us(FRAME_DT);
 	}
-	while (!exit);
 
-	return 0;
+	return 1;
 }
